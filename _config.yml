@@ -1,0 +1,11 @@
+# Site settings
+title: ihsan Kehribar
+email: your-email@domain.com
+description: /* Some comments and facts. */
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://yourdomain.com" # the base hostname & protocol for your site
+twitter_username: ihsankehribar
+github_username:  kehribar
+
+# Build settings
+markdown: kramdown
