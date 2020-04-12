@@ -20,7 +20,7 @@ Sound samples for the system can be found from the following two links.
 
 Please note that, there is no *single tone* for this device. Almost every parameter is tunable on the fly. In the future I may build a user interaface with buttons and knobs for this device but at the moment I'm just following *change software - recompile - burn* path for creating different sounds. Not much effective but works at the moment. :)
 
-### Earlier Work
+### Earlier Work
 
 Couple of months ago, I started this idea of creating a synthesizer with Atmel's Xmega32E5 8bit microcontroller. You can find the code base for this project from here: <https://github.com/kehribar/xmega_fm-synth>
 
@@ -32,13 +32,13 @@ I hit some limitations with the Xmega system and wanted to go with an 32bit micr
 
 ![image](/img/i2s_codec_old2.png)
 
-### Schematic
+### Schematic
 
 Final schematic is below. I'm going to explain the system part by part.
 
 [![image](/img/i2s_codec_sch.png)](/img/i2s_codec_sch.png)
 
-####Microcontroller
+#### Microcontroller
 
 ![image](/img/i2s_codec_mcu.png)
 
@@ -48,7 +48,7 @@ For the system clock, I'm using the internal PLL to generate 48 MHz clock but I 
 
 R1,R2,R3 and R4 is used to *slow down* the edges of I2S signals to lower the high frequency noise a little bit. I put 49.9 ohms in the real circuit.
 
-####Audio Codec
+#### Audio Codec
 
 ![image](/img/i2s_codec_codec.png)
 
@@ -58,7 +58,7 @@ Best thing about this codec is, there is no need for DC blocking caps on the out
 
 Also, this codec generates a negative bias voltage via internal charge pump and I'm tapping that voltage from the codec to power the opamp's negative supply.
 
-####Output filter
+#### Output filter
 
 ![image](/img/i2s_codec_filter.png)
 
@@ -66,13 +66,13 @@ Opamp that I used is MCP6002. It is not a low noise or audio grade opamp but it 
 
 This is a second order Sallen Key low pass filter followed by a single order passive low pass filter. Component values should have been properly selected for the best rejection curve, but I used 4.7 k for resistors and 4.7nF for the capacitors which gives roughly 7.3 kHz -3db point. 
 
-####Power supply
+#### Power supply
 
 ![image](/img/i2s_codec_ldo.png)
 
 LDO footprint is compatible with generic 5 pin SOT23 LDOs. Specifically I used Micrel MIC5317. There are two seperate regulators, one for the microcontroller, other for the codec + output filter. There are also ferrite beads at the input stage of the LDOs to filter out some high frequency noise as much as they can.
 
-####Midi interface
+#### Midi interface
 
 ![image](/img/i2s_codec_midi.png)
 
@@ -82,7 +82,7 @@ Optocoupler decouples the instrument ground with the controller board ground and
 
 In the v0.1 hardware, I mixed pin#4 and pin#5 of the connector. I patched it with knife + patch wires on the PCB. Easy mistake! :) Schematic is corrected.
 
-### Layout
+### Layout
 
 ![image](/img/i2s_codec_layout1.png)
 
@@ -94,15 +94,15 @@ Sizewise, I just sticked to 5x5 cm rule of the low cost PCB fab houses though it
 
 I used <http://dirtypcbs.com/> for the PCB manufacturing.
 
-###Firmware
+### Firmware
 
-####Toolchain
+#### Toolchain
 
 GitHub repository for the firmware is this: <https://github.com/kehribar/stm32f031_template/tree/master/_synth> This particular firmware is a part of my trial on creating a generic framework for STM32F031 microcontroller. You can check the [base repository](https://github.com/kehribar/stm32f031_template/) for other examples.
 
 I used GCC compiler that I downloaded from <http://launchpad.net/gcc-arm-embedded>. Telling the Makefile where you unzipped the toolchain is enough. For the programmer, I used an STM32F4 Discovery board. After removing two jumper headers, that board acts like a generic ST Link v2 programmer. Calling *make iterate* on the command line just recompiles everything and flashes the board via OpenOCD under 10 seconds.
 
-####Sound synthesis
+#### Sound synthesis
 
 For a proper background on the topic, you can read about FM synthesis from the following links. I won't be able to explain better :)
 
@@ -120,13 +120,13 @@ Here is my quick notes on the sound synthesis details of the system. You can als
 * In total, there are three diffent envelopes, for output amplitude, fm modulation amount and lfo modulation amount for each sound with adjustable attack, decay, sustain and release parameters.
 * System is touch sensitive, meaning that maximum sound level and FM modulation amount changes with the velocity of the MIDI note.
 
-####DMA
+#### DMA
 
 DMA is used to transfer data from the microcontroller to codec. DMA on the STM32F031 isn't *double buffering* capable so I had to trick the system to emulate a double buffering. 
 
 DMA itself has *Transfer Complete* and *Half Complete* interrupts. In the *while(1)* loop, I poll for these two interrupt flags and fill the first half or second half of a fixed lineer buffer based on which flag is set. As far as DMA concerns, it wraps to the begining of the array after it goes to end but in the mean time I change the content of the buffer without any data corruption problems thanks to the indication flags.
 
-###I2S
+### I2S
 
 I2S peripheral of the SMT32F031 supports 24 bits transfers but it doesn't play well with the DMA. For each sample, first you need to shift the data 8bits to left align it to 32bits. Second, you need to swap the higher 16bits and the lower 16bits in that variable. It is most probably due to how the DMA reads the memory. I learned that by *some amount* of debugging session. 
 
@@ -144,18 +144,18 @@ static inline int32_t convertDataForDma_24b(const int32_t data)
 }
 {% endhighlight %}
 
-###Downloads
+### Downloads
 
 You can download the Eagle files for this project from the following links.
 
 * [Schematic](/files/stm32f0_i2s.sch)
 * [Layout](/files/stm32f0_i2s.brd)
 
-###Licence
+### Licence
 
 This project is published under the terms of the GNU General Public License, version 3 licence.
 
-###Acknowledgement
+### Acknowledgement
 
 Mutable Instruments community was really helpful to me during the development of this project.
 
@@ -164,4 +164,3 @@ Mutable Instruments community was really helpful to me during the development of
 
 Best,<br>
 ihsan.
-
